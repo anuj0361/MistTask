@@ -4,32 +4,17 @@ import airlines from "../data/airlines";
 import Chart from "chart.js";
 
 class App extends Component {
-  componentDidMount() {
-    this.drawChart();
+  constructor() {
+    super();
+    this.state = { value: "" };
   }
 
-  drawChart() {
-    const noOfAirlines = new Array(24).fill(0);
-    let total = 0;
+  componentDidMount() {
+    this.filterData();
+  }
 
-    airlineData.forEach(timeSlot => {
-      if (typeof timeSlot === "object" && timeSlot != null) {
-        if (
-          timeSlot.hasOwnProperty("airline") &&
-          timeSlot.hasOwnProperty("time")
-        ) {
-          let time = timeSlot.time.split(":");
-          let timeStamp = +time[0];
-          ++noOfAirlines[timeStamp];
-        }
-      }
-    });
-
-    noOfAirlines.forEach(num => {
-      if (!isNaN(num)) total += num;
-    });
-
-    var config = {
+  drawChart = (noOfAirlines, total, airline) => {
+    let config = {
       type: "line",
       data: {
         labels: [
@@ -70,7 +55,7 @@ class App extends Component {
         title: {
           display: true,
           position: "top",
-          text: `${total} Filghts All Airlines`,
+          text: `${total} Filghts ${airline}`,
           fontSize: 18,
           fontColor: "#111"
         },
@@ -103,9 +88,50 @@ class App extends Component {
       }
     };
 
-    var ctx = document.getElementById("myChart");
+    let ctx = document.getElementById("myChart");
     new Chart(ctx, config);
-  }
+  };
+
+  filterData = () => {
+    const noOfAirlines = new Array(24).fill(0);
+    let total = 0;
+
+    airlineData.forEach(timeSlot => {
+      if (typeof timeSlot === "object" && timeSlot != null) {
+        if (
+          timeSlot.hasOwnProperty("airline") &&
+          timeSlot.hasOwnProperty("time")
+        ) {
+          let time = timeSlot.time.split(":");
+          let timeStamp = +time[0];
+          ++noOfAirlines[timeStamp];
+        }
+      }
+    });
+
+    noOfAirlines.forEach(num => {
+      if (!isNaN(num)) total += num;
+    });
+    this.drawChart(noOfAirlines, total, "All Airlines");
+  };
+
+  handleChange = e => {
+    this.setState({ value: e.target.value });
+  };
+
+  blurEvent = e => {
+    let airlineVal = [];
+    let airlineArray = Object.values(airlines);
+    airlineArray.forEach(airline => {
+      if (airline.toLowerCase().includes(this.state.value.toLowerCase())) {
+        airlineVal.push(airline);
+      }
+    });
+    let key = Object.keys(airlines).find(
+      key => airlines[key] === airlineVal[0]
+    );
+    if (this.state.value === "" || key === undefined) console.log("all");
+  };
 
   render() {
     const chartStyle = {
@@ -115,8 +141,28 @@ class App extends Component {
     };
 
     return (
-      <div className="chart-container" style={chartStyle}>
-        <canvas id="myChart" />
+      <div>
+        <nav className="navbar navbar-default">
+          <div className="container-fluid">
+            <div className="navbar-header">
+              <a className="navbar-brand">Airplane Flights</a>
+            </div>
+            <div className="form-group">
+              <input
+                type="text"
+                value={this.state.value}
+                className="form-control"
+                style={{ width: "200px", float: "right", marginTop: "8px" }}
+                placeholder="Search Flights"
+                onChange={this.handleChange}
+                onBlur={this.blurEvent}
+              />
+            </div>
+          </div>
+        </nav>
+        <div className="chart-container" style={chartStyle}>
+          <canvas id="myChart" />
+        </div>
       </div>
     );
   }
