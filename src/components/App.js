@@ -10,7 +10,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.filterData();
+    this.populateData(airlineData, "All Airlines");
   }
 
   drawChart = (noOfAirlines, total, airline) => {
@@ -92,11 +92,28 @@ class App extends Component {
     new Chart(ctx, config);
   };
 
-  filterData = () => {
+  filterData = option => {
+    if (option === "All") {
+      this.populateData(airlineData, "All Airlines");
+    } else {
+      let data = airlineData.filter(airline => {
+        if (
+          typeof airline === "object" &&
+          airline != null &&
+          airline.hasOwnProperty("airline")
+        ) {
+          if (airline.airline === option) return airline;
+        }
+      });
+      this.populateData(data, option);
+    }
+  };
+
+  populateData = (data, label) => {
     const noOfAirlines = new Array(24).fill(0);
     let total = 0;
 
-    airlineData.forEach(timeSlot => {
+    data.forEach(timeSlot => {
       if (typeof timeSlot === "object" && timeSlot != null) {
         if (
           timeSlot.hasOwnProperty("airline") &&
@@ -112,7 +129,11 @@ class App extends Component {
     noOfAirlines.forEach(num => {
       if (!isNaN(num)) total += num;
     });
-    this.drawChart(noOfAirlines, total, "All Airlines");
+    if (label !== "All Airlines") {
+      label = airlines[label];
+    }
+
+    this.drawChart(noOfAirlines, total, label);
   };
 
   handleChange = e => {
@@ -130,7 +151,12 @@ class App extends Component {
     let key = Object.keys(airlines).find(
       key => airlines[key] === airlineVal[0]
     );
-    if (this.state.value === "" || key === undefined) console.log("all");
+    if (this.state.value === "" || key === undefined) this.filterData("All");
+    else this.filterData(key);
+  };
+
+  handleKeyPress = e => {
+    if (e.key === "Enter") this.blurEvent();
   };
 
   render() {
@@ -156,6 +182,7 @@ class App extends Component {
                 placeholder="Search Flights"
                 onChange={this.handleChange}
                 onBlur={this.blurEvent}
+                onKeyPress={this.handleKeyPress}
               />
             </div>
           </div>
