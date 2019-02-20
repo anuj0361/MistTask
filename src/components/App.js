@@ -6,13 +6,14 @@ import Chart from "chart.js";
 class App extends Component {
   constructor() {
     super();
-    this.state = { value: "" };
+    this.state = { value: "", currentChart: undefined };
   }
 
   componentDidMount() {
     this.populateData(airlineData, "All Airlines");
   }
 
+  /*** functions to draw & update chart according to data ***/
   drawChart = (noOfAirlines, total, airline) => {
     let config = {
       type: "line",
@@ -66,32 +67,22 @@ class App extends Component {
             fontColor: "#333",
             fontSize: 16
           }
-        },
-        scales: {
-          xAxes: [
-            {
-              type: "time",
-              time: {
-                format: "HH:mm:ss",
-                unit: "hour",
-                unitStepSize: 1,
-                displayFormats: {
-                  minute: "HH:mm:ss",
-                  hour: "HH:mm:ss",
-                  min: "00:00:00",
-                  max: "23:59:59"
-                }
-              }
-            }
-          ]
         }
       }
     };
 
     let ctx = document.getElementById("myChart");
-    new Chart(ctx, config);
+    this.updateChart(ctx, config);
   };
 
+  updateChart = (ctx, config) => {
+    if (this.state.currentChart) {
+      this.state.currentChart.destroy();
+    }
+    this.setState({ currentChart: new Chart(ctx, config) });
+  };
+
+  /*** functions to manipulate data for chart generation ***/
   filterData = option => {
     if (option === "All") {
       this.populateData(airlineData, "All Airlines");
@@ -136,6 +127,7 @@ class App extends Component {
     this.drawChart(noOfAirlines, total, label);
   };
 
+  /*** functions to handle search bar events ***/
   handleChange = e => {
     this.setState({ value: e.target.value });
   };
@@ -160,12 +152,6 @@ class App extends Component {
   };
 
   render() {
-    const chartStyle = {
-      position: "relative",
-      height: "40vh",
-      width: "80vw"
-    };
-
     return (
       <div>
         <nav className="navbar navbar-default">
@@ -187,7 +173,14 @@ class App extends Component {
             </div>
           </div>
         </nav>
-        <div className="chart-container" style={chartStyle}>
+        <div
+          className="chart-container"
+          style={{
+            position: "relative",
+            height: "40vh",
+            width: "80vw"
+          }}
+        >
           <canvas id="myChart" />
         </div>
       </div>
