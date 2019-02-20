@@ -95,6 +95,7 @@ class App extends Component {
         ) {
           if (airline.airline === option) return airline;
         }
+        return null;
       });
       this.populateData(data, option);
     }
@@ -157,7 +158,9 @@ class App extends Component {
         <nav className="navbar navbar-default">
           <div className="container-fluid">
             <div className="navbar-header">
-              <a className="navbar-brand">Airplane Flights</a>
+              <a className="navbar-brand" href="/">
+                Airplane Flights
+              </a>
             </div>
             <div className="form-group">
               <input
